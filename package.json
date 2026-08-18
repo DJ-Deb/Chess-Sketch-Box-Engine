@@ -1,9 +1,14 @@
 {
   "name": "chess-sketch-box-engine",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Custom NxM chess engine for developers",
   "main": "index.js",
-  "keywords": ["chess", "engine", "nxm", "board"],
+  "keywords": [
+    "chess",
+    "engine",
+    "nxm",
+    "board"
+  ],
   "author": "Dhrubajyoti Deb",
   "license": "MIT",
   "repository": {
