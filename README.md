@@ -544,13 +544,13 @@ The move API documents these validation conditions explicitly.
 Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/weapon8008/Chess-Sketch-Box-Engine
 ```
 
 Enter the project:
 
 ```bash
-cd <repository-name>
+cd Chess-Sketch-Box-Engine
 ```
 
 Install dependencies:
