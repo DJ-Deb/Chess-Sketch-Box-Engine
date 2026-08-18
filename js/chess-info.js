@@ -1,27 +1,32 @@
 export function chessmen(matrix) {
-    let bot = []
-    let player = []
+    const collen = matrix[0].length
+    let king1 = []
+    let king2 = []
+    let player1 = []
+    let player2 = []
+    let rook_player1 = []
+    let rook_player2 = []
     for (let i = 0; i < matrix.length; i++) {
-        for (let j = 0; j < matrix[0].length; j++) {
-            if (matrix[i][j] > 0 && matrix[i][j] <= 6)
-                bot.push([[i, j], matrix[i][j]])
-            else if (matrix[i][j] >= 7 && matrix[i][j] < 13)
-                player.push([[i, j], matrix[i][j]])
+        for (let j = 0; j < collen; j++) {
+            if (matrix[i][j] > 0 && matrix[i][j] <= 6) {
+                player1.push([[i, j], matrix[i][j]])
+                if (matrix[i][j] === 6) {
+                    king1 = [i, j]
+                } else if (matrix[i][j] === 4) {
+                    rook_player1.push([i, j])
+                }
+            } else if (matrix[i][j] >= 7 && matrix[i][j] < 13) {
+                player2.push([[i, j], matrix[i][j]])
+                if (matrix[i][j] === 12) {
+                    king2 = [i, j]
+                } else if (matrix[i][j] === 10) {
+                    rook_player2.push([i, j])
+                }
+            }
         }
-    }    
-    return [bot, player]
+    }
+    const castle1 = rook_player1.filter(([row, col]) => row === king1[0] && (col === 0 || col === collen - 1)).map(([row, col]) => col)
+    const castle2 = rook_player2.filter(([row, col]) => row === king2[0] && (col === 0 || col === collen - 1)).map(([row, col]) => col)
+    return [player1, player2, king1, king2, castle1, castle2]
 }
 
-export function kingPos(bot, player) {
-    for (let i = 0; i < bot.length; i++) {
-        if (bot[i][1] === 6) {
-            bot = bot[i][0]
-        }
-    }
-    for (let i = 0; i < player.length; i++) {
-        if (player[i][1] === 12) {
-            player = player[i][0]
-        }
-    }
-    return [bot, player]
-}
