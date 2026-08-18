@@ -602,15 +602,13 @@ git push origin feature/my-feature
 
 ---
 
-# License
+## License
 
-Add the project's license information here.
+Copyright (c) 2026 Dhrubajyoti Deb
 
-For example:
+This project is licensed under the MIT License.
 
-```text
-MIT License
-```
+See the [LICENSE](LICENSE) file for the complete license text.
 
 ---
 
