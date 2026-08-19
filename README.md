@@ -20,6 +20,24 @@ The package is available on NPM. You can install it and use it directly in your 
 
 ---
 
+## Installation
+
+If this project is published as an npm package:
+
+```bash
+npm i chess-sketch-box-engine
+```
+
+If you are using it directly from the repository:
+
+```bash
+git clone https://github.com/weapon8008/Chess-Sketch-Box-Engine
+cd Chess-Sketch-Box-Engine
+npm install
+```
+
+---
+
 ## Features
 
 ### Custom Board Size
@@ -62,24 +80,6 @@ Each chess piece is represented by a number in the matrix.
 |  `12` | Player 2 | King   |
 
 The complete mapping is defined directly in the `Board` implementation.
-
----
-
-## Installation
-
-If this project is published as an npm package:
-
-```bash
-npm i chess-sketch-box-engine
-```
-
-If you are using it directly from the repository:
-
-```bash
-git clone https://github.com/weapon8008/Chess-Sketch-Box-Engine
-cd Chess-Sketch-Box-Engine
-npm install
-```
 
 ---
 
