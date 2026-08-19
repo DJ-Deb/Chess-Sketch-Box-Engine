@@ -16,11 +16,7 @@ The engine represents chess pieces using numeric values inside a 2D matrix and p
 
 ### 📦 NPM Package: https://www.npmjs.com/package/chess-sketch-box-engine
 
-The package is available on NPM. You can install it and use it directly in your JavaScript or Node.js project:
-
-```bash
-npm install chess-sketch-box-engine
-```
+The package is available on NPM. You can install it and use it directly in your JavaScript or Node.js project.
 
 ---
 
