@@ -13,10 +13,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/weapon8008/Chess-Sketch-Box-Engine.git"
+    "url": "git+https://github.com/DJ-Deb/Chess-Sketch-Box-Engine.git"
   },
-  "homepage": "https://github.com/weapon8008/Chess-Sketch-Box-Engine",
+  "homepage": "https://github.com/DJ-Deb/Chess-Sketch-Box-Engine",
   "bugs": {
-    "url": "https://github.com/weapon8008/Chess-Sketch-Box-Engine/issues"
+    "url": "https://github.com/DJ-Deb/Chess-Sketch-Box-Engine/issues"
   }
 }
