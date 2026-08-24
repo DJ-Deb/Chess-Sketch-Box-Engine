@@ -31,7 +31,7 @@ npm i chess-sketch-box-engine
 If you are using it directly from the repository:
 
 ```bash
-git clone https://github.com/weapon8008/Chess-Sketch-Box-Engine
+git clone https://github.com/DJ-Deb/Chess-Sketch-Box-Engine
 cd Chess-Sketch-Box-Engine
 npm install
 ```
@@ -548,7 +548,7 @@ The move API documents these validation conditions explicitly.
 Clone the repository:
 
 ```bash
-git clone https://github.com/weapon8008/Chess-Sketch-Box-Engine
+git clone https://github.com/DJ-Deb/Chess-Sketch-Box-Engine
 ```
 
 Enter the project:
