@@ -15,7 +15,7 @@
     "type": "git",
     "url": "git+https://github.com/DJ-Deb/Chess-Sketch-Box-Engine.git"
   },
-  "homepage": "https://github.com/DJ-Deb/Chess-Sketch-Box-Engine",
+  "homepage": "https://www.npmjs.com/package/chess-sketch-box-engine",
   "bugs": {
     "url": "https://github.com/DJ-Deb/Chess-Sketch-Box-Engine/issues"
   }

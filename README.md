@@ -1,5 +1,9 @@
 # Custom Chess Board Engine
 
+[![npm version](https://img.shields.io/npm/v/chess-sketch-box-engine.svg)](https://www.npmjs.com/package/chess-sketch-box-engine)
+[![npm downloads](https://img.shields.io/npm/dm/chess-sketch-box-engine.svg)](https://www.npmjs.com/package/chess-sketch-box-engine)
+[![License](https://img.shields.io/npm/l/chess-sketch-box-engine.svg)](https://github.com/DJ-Deb/Chess-Sketch-Box-Engine/blob/main/LICENSE)
+
 A JavaScript chess-board engine designed to work with **custom `n × m` boards**, rather than being restricted to the traditional 8×8 chess board.
 
 The engine represents chess pieces using numeric values inside a 2D matrix and provides functionality for:
