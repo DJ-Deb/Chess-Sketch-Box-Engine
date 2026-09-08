@@ -1,9 +1,7 @@
 # Custom Chess Board Engine
 
 [![npm version](https://img.shields.io/npm/v/chess-sketch-box-engine.svg)](https://www.npmjs.com/package/chess-sketch-box-engine)
-
 [![npm downloads](https://img.shields.io/npm/dm/chess-sketch-box-engine.svg)](https://www.npmjs.com/package/chess-sketch-box-engine)
-
 [![License](https://img.shields.io/npm/l/chess-sketch-box-engine.svg)](https://github.com/DJ-Deb/Chess-Sketch-Box-Engine/blob/main/LICENSE)
 
 A JavaScript chess-board engine designed to work with **custom `n × m` boards**, rather than being restricted to the traditional 8×8 chess board.
@@ -138,20 +136,16 @@ new Board(["l", "r"], ["l", "r"]);
 
 The following values are supported:
 
-```js
-["l"]
-```
-
 Allows castling using the left-side rook.
 
 ```js
-["r"]
+["l"]
 ```
 
 Allows castling using the right-side rook.
 
 ```js
-["l", "r"]
+["r"]
 ```
 
 Allows castling using both rooks.
@@ -802,7 +796,7 @@ new Board(["l", "r"], ["l", "r"]);
 
 When a king performs a castling move by moving two columns toward the corresponding rook, the engine automatically moves the rook.
 
-For example, a king-side castling operation conceptually performs:
+For right-side castling, operation performs:
 
 ```text
 King:
@@ -812,7 +806,7 @@ Rook:
 edge_col → old_col + 1
 ```
 
-For queen-side castling:
+For left-side castling, operation performs:
 
 ```text
 King:
@@ -1183,46 +1177,6 @@ The current implementation provides:
 * Castling-state tracking
 
 The engine is designed so that the board matrix can be supplied independently from the board configuration.
-
----
-
-# Contributing
-
-Contributions are welcome.
-
-If you would like to contribute:
-
-### 1. Fork the repository
-
-### 2. Create a new branch
-
-```bash
-git checkout -b feature/my-feature
-```
-
-### 3. Make your changes
-
-Implement your changes and ensure they follow the existing project structure.
-
-### 4. Test your changes
-
-Verify that the changes do not break existing board, movement, check, capture, promotion, or castling functionality.
-
-### 5. Commit your changes
-
-```bash
-git commit -m "Add my feature"
-```
-
-### 6. Push the branch
-
-```bash
-git push origin feature/my-feature
-```
-
-### 7. Open a Pull Request
-
-Submit a Pull Request describing the changes you made.
 
 ---
 
