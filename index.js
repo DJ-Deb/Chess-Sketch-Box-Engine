@@ -1,4 +1,4 @@
-import { chessmen } from "./js/chess-info.js"
+import chessInfo from "./js/chess-info.js"
 import { PlayerChessman_1, PlayerChessman_2 } from "./js/chessman.js"
 
 class MatrixOperation {
@@ -93,8 +93,8 @@ class MatrixOperation {
     }
 
     // initiate the chess board data
-    _initiateBoardData(matrix) {
-        const [player1, player2, king1, king2, castle_player1, castle_player2] = chessmen(matrix)
+    _initiateBoardData(matrix, castlePlayer1, castlePlayer2) {
+        const [player1, player2, king1, king2, castle_player1, castle_player2] = chessInfo(matrix, castlePlayer1, castlePlayer2)
         this.boardData = {
             "matrix": matrix,
             "player1": player1,
@@ -110,94 +110,276 @@ class MatrixOperation {
 }
 
 export default class Board extends MatrixOperation {
+    // set castle if needed
+    #player1Castle = undefined
+    #player2Castle = undefined
+
     /**
-    * **Start your custom chess board**
-    * ---------------------------------
-    * 
-    * **Here**: The matrix is a **n × m** matrix  
-    * - **n** (columns) > 1  
-    * - **m** (rows) > 1 
-    * 
-    * ---
-    *
-    * @param {number[][]} matrix
-    * ```
-    * [
-    *   [A00, A01, ..., A0n],
-    *   [A10, A11, ..., A1n],
-    *   [..., ..., ..., ...],
-    *   [Am0, Am1, ..., Amn]
-    * ]
-    * ```
-    *
-    * **Number in the matrix values**:
-    * 
-    * - **0** - Empty box or no chessman
-    * ```Player1```
-    * - **1** - Player1 Pawn
-    * - **2** - Player1 Knight
-    * - **3** - Player1 Bishop
-    * - **4** - Player1 Rook
-    * - **5** - Player1 Queen
-    * - **6** - Player1 King
-    * ```Player2```
-    * - **7** - Player2 Pawn
-    * - **8** - Player2 Knight
-    * - **9** - Player2 Bishop
-    * - **10** - Player2 Rook
-    * - **11** - Player2 Queen
-    * - **12** - Player2 King
-    *  
-    * ---
-    * 
-    * **Steps it follows**
-    * --------------
-    * - Check matrix is valid 2D array
-    * - Check numbers inside the matrix ```[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]```
-    * - Initiate the chess ```boardData```
-    * 
-    * ---
-    * 
-    * **How to use ?**
-    * --------------
-    * - **Step1**: create object(obj) = new Board(```matrix```, ```playerColor```)
-    * - **Step2**: Then use its variables and methods - `obj`.```boardData```, `obj`.```showMoves(row, col)``` and `obj`.```playeMoves(old_row, old_col, new_row, new_col, changeChessman)```
-    */
-    constructor(matrix) {
+     * **Create a custom chess board**
+     * ------------------------------
+     *
+     * Creates a `Board` object with the desired castling configuration
+     * for both players.
+     *
+     * The chess board matrix is provided later using the `fit()` method.
+     *
+     * ---
+     *
+     * **Player 1 Castling**
+     * ---------------------
+     * - `"l"` - Allow castling with the left-side rook
+     * - `"r"` - Allow castling with the right-side rook
+     *
+     * **Player 2 Castling**
+     * ---------------------
+     * - `"l"` - Allow castling with the left-side rook
+     * - `"r"` - Allow castling with the right-side rook
+     *
+     * Each player's castling configuration must be an array containing
+     * only `"l"` and/or `"r"` and must not contain more than 2 elements.
+     *
+     * Valid values:
+     * ```javascript
+     * ["l"]
+     * ["r"]
+     * ["l", "r"]
+     * ["r", "l"]
+     * ```
+     *
+     * ---
+     *
+     * **Steps to use**
+     * ----------------
+     * **Step 1:** Create a `Board` object with the desired castling
+     * configuration.
+     *
+     * ```javascript
+     * const obj = new Board(["l", "r"], ["l"])
+     * ```
+     *
+     * **Step 2:** Provide the chess board matrix using the `fit()` method.
+     *
+     * ```javascript
+     * obj.fit(matrix)
+     * ```
+     *
+     * **Step 3:** Use the board's variables and methods.
+     *
+     * ```javascript
+     * obj.boardData
+     * obj.showMoves(row, col)
+     * obj.playMove(
+     *     old_row,
+     *     old_col,
+     *     new_row,
+     *     new_col,
+     *     changeChessman
+     * )
+     * ```
+     *
+     * ---
+     *
+     * @param {string[]} player1Castle
+     * Castling options allowed for Player 1.
+     *
+     * @param {string[]} player2Castle
+     * Castling options allowed for Player 2.
+     *
+     * @example
+     * ```javascript
+     * const obj = new Board(["l", "r"], ["l", "r"])
+     *
+     * obj.fit([
+     *     [10, 8, 9, 11, 12, 9, 8, 10],
+     *     [7, 7, 7, 7, 7, 7, 7, 7],
+     *     [0, 0, 0, 0, 0, 0, 0, 0],
+     *     [0, 0, 0, 0, 0, 0, 0, 0],
+     *     [0, 0, 0, 0, 0, 0, 0, 0],
+     *     [0, 0, 0, 0, 0, 0, 0, 0],
+     *     [1, 1, 1, 1, 1, 1, 1, 1],
+     *     [4, 2, 3, 5, 6, 3, 2, 4]
+     * ])
+     *
+     * obj.showMoves(7, 4)
+     * ```
+     */
+    constructor(player1Castle = ["l", "r"], player2Castle = ["l", "r"]) {
         super()
-        this._checkDimention(matrix)
-        this._checkMatrix(matrix)
-        this._initiateBoardData(matrix)
-        // startPrediction()
+
+        this.#constructorErrorHandle(player1Castle, "player1Castle")
+        this.#constructorErrorHandle(player2Castle, "player2Castle")
+
+        this.#player1Castle = player1Castle
+        this.#player2Castle = player2Castle
     }
 
     /**
-     * **Show the moves possible**
-     * -------------------------
-     * - Calculate the number of moves possible by the desired **chessman** of the current chessboard.
-     * - The chessman is ```matrix[row][col]```
-     * 
+     * **Fit the matrix to the chess board**
+     * --------------------------------------
+     *
+     * Validates the provided matrix and uses it to initialize the
+     * board's internal `boardData`.
+     *
+     * ---
+     *
+     * @param {number[][]} matrix
+     * The matrix representing the chess board.
+     *
+     * ```javascript
+     * [
+     *   [A00, A01, ..., A0n],
+     *   [A10, A11, ..., A1n],
+     *   [..., ..., ..., ...],
+     *   [Am0, Am1, ..., Amn]
+     * ]
+     * ```
+     *
+     * **Number representation of chessmen:**
+     *
+     * - **0** - Empty box / no chessman
+     *
+     * **Player 1**
+     * - **1** - Player 1 Pawn
+     * - **2** - Player 1 Knight
+     * - **3** - Player 1 Bishop
+     * - **4** - Player 1 Rook
+     * - **5** - Player 1 Queen
+     * - **6** - Player 1 King
+     *
+     * **Player 2**
+     * - **7** - Player 2 Pawn
+     * - **8** - Player 2 Knight
+     * - **9** - Player 2 Bishop
+     * - **10** - Player 2 Rook
+     * - **11** - Player 2 Queen
+     * - **12** - Player 2 King
+     *
+     * ---
+     *
+     * **Steps it follows**
+     * --------------------
+     * - Check whether the matrix has valid dimensions.
+     * - Check whether the matrix contains only valid chessman values:
+     *   ```javascript
+     *   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+     *   ```
+     * - Initialize the chess board's internal `boardData`.
+     *
+     * ---
+     *
+     * **How to use**
+     * --------------
+     * **Step 1:** Create a `Board` object.
+     *
+     * ```javascript
+     * const board = new Board()
+     * ```
+     *
+     * **Step 2:** Fit the chess board matrix using `fit()`.
+     *
+     * ```javascript
+     * board.fit(matrix)
+     * ```
+     *
+     * **Step 3:** After fitting the matrix, use the board's properties
+     * and methods.
+     *
+     * ```javascript
+     * board.boardData
+     * board.showMoves(row, col)
+     * board.playMove(
+     *   old_row,
+     *   old_col,
+     *   new_row,
+     *   new_col,
+     *   changeChessman
+     * )
+     * ```
+     *
+     * @returns {void}
+     *
+     * @example
+     * ```javascript
+     * const board = new Board()
+     *
+     * board.fit([
+     *   [10, 8, 9, 11, 12, 9, 8, 10],
+     *   [7, 7, 7, 7, 7, 7, 7, 7],
+     *   [0, 0, 0, 0, 0, 0, 0, 0],
+     *   [0, 0, 0, 0, 0, 0, 0, 0],
+     *   [0, 0, 0, 0, 0, 0, 0, 0],
+     *   [0, 0, 0, 0, 0, 0, 0, 0],
+     *   [1, 1, 1, 1, 1, 1, 1, 1],
+     *   [4, 2, 3, 5, 6, 3, 2, 4]
+     * ])
+     * ```
+     */
+    fit(matrix) {
+        this._checkDimention(matrix)
+        this._checkMatrix(matrix)
+        this._initiateBoardData(matrix, this.#player1Castle, this.#player2Castle)
+    }
+
+    /**
+     * **Show the possible moves**
+     * ---------------------------
+     *
+     * Calculates all valid moves available to the chessman located at
+     * the specified position on the current chess board.
+     *
+     * The chessman is identified by its position in the board matrix:
+     *
+     * ```javascript
+     * matrix[row][col]
+     * ```
+     *
      * @param {number} row
-     * This is the chessman ```row``` postion
-     * 
-     * -
+     * The current row position of the chessman.
+     *
      * @param {number} col
-     * This is the chessman ```col``` postion
+     * The current column position of the chessman. 
      * 
-     * -
-     * 
-     * --- 
-     * 
-     * These are the number of moves the desired chessman can move.
-     * @returns {number[][]} 
+     * ---
+     *
+     * **Possible Moves**
+     * -----------------
+     * Returns the positions of all valid moves that the chessman can
+     * make from the given `[row, col]` position.
+     *
+     * @returns {number[][]}
+     * An array containing the `[row, col]` positions of all possible moves.
+     *
+     * ```javascript
+     * [
+     *   [new_row_1, new_col_1],
+     *   [new_row_2, new_col_2],
+     *   ...,
+     *   [new_row_n, new_col_n]
+     * ]
      * ```
-     * [[new_row_1, new_col_1], [new_row2, new_col_2], ..., [new_row_n, new_col_n]]
-     * ```
-     * If there is no move possible it will return
-     * ```
+     *
+     * If the chessman has no possible moves, it returns:
+     *
+     * ```javascript
      * [null]
-     * ```  
-    */
+     * ```
+     *
+     * ---
+     *
+     * **Example**
+     * ```javascript
+     * board.showMoves(6, 4)
+     * ```
+     *
+     * Returns:
+     *
+     * ```javascript
+     * [
+     *   [5, 4],
+     *   [4, 4]
+     * ]
+     * ```
+     */
     showMoves(row, col) {
         let list
         if (this.boardData.matrix[row][col] <= 6 && this.boardData.matrix[row][col] > 0) {
@@ -210,12 +392,16 @@ export default class Board extends MatrixOperation {
 
     /**
      * **Play the chessman move**
-     * -------------------------
-     * - Check whether the desired **chessman** can move in the current chessboard.
-     * - Move the **chessman** to the new position:
-     *   `matrix[new_row][new_col]`
-     * - Change the chessman value if it is a pawn (`1` or `7`) that reaches
-     *   the opponent's extreme row.
+     * --------------------------
+     *
+     * Validates and executes a move for the chessman on the current
+     * chess board.
+     *
+     * The method:
+     * - Checks whether the chessman can legally move to the destination.
+     * - Moves the chessman from the current position to the destination.
+     * - Captures the opposing chessman if one occupies the destination.
+     * - Promotes a pawn when it reaches the opponent's extreme row.
      *
      * @param {number} old_row
      * The current row position of the chessman.
@@ -230,28 +416,35 @@ export default class Board extends MatrixOperation {
      * The destination column position.
      *
      * @param {number} [changeChessman=-1]
-     * The chessman value to promote the pawn to when it reaches the opponent's
-     * extreme row.
+     * The chessman value used to promote a pawn when it reaches the
+     * opponent's extreme row.
      *
      * **Player 1 pawn (`1`)**
-     * ```
+     * ```text
      * changeChessman = 2 | 3 | 4 | 5
      * ```
      *
      * **Player 2 pawn (`7`)**
-     * ```
+     * ```text
      * changeChessman = 8 | 9 | 10 | 11
      * ```
      *
+     * If the moving chessman is not a pawn reaching the promotion row,
+     * `changeChessman` is not required.
+     *
+     * ---
+     *
      * @returns {boolean}
-     * `true` - The chessman has successfully moved.
+     * Returns `true` if the chessman was successfully moved.
      *
-     * `false` - The chessman has not be moved
+     * Returns `false` if the move could not be performed.
      *
-     * 
+     * ---
+     *
      * @throws {Error}
      * Throws an error if:
-     * - The chessman donot have valid next move.
+     * - The specified position does not contain a valid chessman.
+     * - The destination is not a valid move for the chessman.
      * - A pawn reaches the promotion row without a valid `changeChessman`.
      * - An invalid `changeChessman` value is provided.
      */
@@ -374,17 +567,24 @@ export default class Board extends MatrixOperation {
     }
 
     /**
-     * **Look after the check**
-     * --------------------
-     * 
-     * This checks that the king of either side is having any check or not.
-     * 
-     * @returns {boolean[]} 
-     * ```
-     * [player1, player2]
-     * ```
-     * 
-     */
+    * **Look after the check**
+    * ---
+    *
+    * Checks whether the king of either player is currently in check.
+    *
+    * @returns {boolean[]}
+    * An array indicating whether each player's king is in check.
+    *
+    * ```javascript
+    ```
+    * [player1, player2]
+    * ```
+    ```
+    *
+    * * `player1` - `true` if Player 1's king is in check, otherwise `false`.
+    * * `player2` - `true` if Player 2's king is in check, otherwise `false`.
+    *
+    */
     check() {
         let player1 = false
         let player2 = false
@@ -766,6 +966,22 @@ export default class Board extends MatrixOperation {
             }
         } else if (piece === 6 || piece === 12) {
             return new_pos
+        }
+    }
+
+    // handles the error of the constructor
+    #constructorErrorHandle(castle, playerCastle) {
+        if (!Array.isArray(castle)) {
+            throw new TypeError(`${playerCastle} must be an array containing "l" and/or "r".`)
+        }
+        if (castle.length < 1 || castle.length > 2) {
+            throw new RangeError(`${playerCastle} must contain 1 or 2 elements. Received ${castle.length}.`)
+        }
+        if (!castle.every(side => side === "l" || side === "r")) {
+            throw new Error(`${playerCastle} can only contain "l" or "r". Received: ${JSON.stringify(castle)}`)
+        }
+        if (new Set(castle).size !== castle.length) {
+            throw new Error(`${playerCastle} cannot contain duplicate sides. Received: ${JSON.stringify(castle)}`)
         }
     }
 }

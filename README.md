@@ -1,7 +1,9 @@
 # Custom Chess Board Engine
 
 [![npm version](https://img.shields.io/npm/v/chess-sketch-box-engine.svg)](https://www.npmjs.com/package/chess-sketch-box-engine)
+
 [![npm downloads](https://img.shields.io/npm/dm/chess-sketch-box-engine.svg)](https://www.npmjs.com/package/chess-sketch-box-engine)
+
 [![License](https://img.shields.io/npm/l/chess-sketch-box-engine.svg)](https://github.com/DJ-Deb/Chess-Sketch-Box-Engine/blob/main/LICENSE)
 
 A JavaScript chess-board engine designed to work with **custom `n × m` boards**, rather than being restricted to the traditional 8×8 chess board.
@@ -17,36 +19,50 @@ The engine represents chess pieces using numeric values inside a 2D matrix and p
 * Castling
 * Player piece tracking
 * King position tracking
+* Castling-state tracking
 
-### 📦 NPM Package: https://www.npmjs.com/package/chess-sketch-box-engine
+**### 📦 NPM Package:** [**chess-sketch-box-engine**](https://www.npmjs.com/package/chess-sketch-box-engine)
 
-The package is available on NPM. You can install it and use it directly in your JavaScript or Node.js project.
+The package is available on NPM and can be installed and used directly in JavaScript or Node.js projects.
 
 ---
 
-## Installation
+# Installation
 
-If this project is published as an npm package:
+If the project is published as an npm package:
 
 ```bash
 npm i chess-sketch-box-engine
 ```
 
-If you are using it directly from the repository:
+If you are using the project directly from the repository:
 
 ```bash
 git clone https://github.com/DJ-Deb/Chess-Sketch-Box-Engine
+
 cd Chess-Sketch-Box-Engine
+
 npm install
 ```
 
 ---
 
-## Features
+# Features
 
-### Custom Board Size
+## Custom Board Size
 
 The board is represented as an `n × m` matrix, allowing boards with different numbers of rows and columns.
+
+The matrix must:
+
+* Be a 2D array.
+* Contain more than one row.
+* Contain more than one column.
+* Have the same number of columns in every row.
+* Not contain arrays as individual cells.
+* Contain only the supported chess-piece values from `0` through `12`.
+
+Example:
 
 ```js
 const matrix = [
@@ -55,15 +71,13 @@ const matrix = [
     [0, 0, 7, 0],
     [0, 0, 0, 0]
 ];
-
-const board = new Board(matrix);
 ```
 
-The implementation validates the board dimensions before initializing the board data.
+The matrix is validated using the internal matrix validation methods before the board data is initialized.
 
 ---
 
-## Piece Representation
+# Piece Representation
 
 Each chess piece is represented by a number in the matrix.
 
@@ -83,73 +97,280 @@ Each chess piece is represented by a number in the matrix.
 |  `11` | Player 2 | Queen  |
 |  `12` | Player 2 | King   |
 
-The complete mapping is defined directly in the `Board` implementation.
+The complete mapping is used throughout the board and move-generation implementation.
 
 ---
 
-## Basic Usage
+# Board Creation
 
-Import the `Board` class:
+The `Board` constructor is responsible for configuring castling.
+
+The chess-board matrix is **not passed to the constructor**.
+
+Instead:
+
+1. Create the `Board` object.
+2. Configure castling options if required.
+3. Pass the matrix to `fit()`.
+
+## `new Board(player1Castle, player2Castle)`
+
+Creates a new chess board engine with the specified castling configuration.
 
 ```js
-import Board from "./Board.js";
+const board = new Board();
 ```
 
-Create a board using a 2D matrix:
+By default, both players are allowed to castle with both rooks:
 
 ```js
-const matrix = [
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [7, 7, 7, 7, 7, 7, 7, 7],
-    [10, 8, 9, 11, 12, 9, 8, 10]
-];
-
-const board = new Board(matrix);
-```
-
-The constructor validates the matrix and initializes `boardData`.
-
----
-
-# API
-
-## `new Board(matrix)`
-
-Creates a new chess board.
-
-```js
-const board = new Board(matrix);
+new Board(["l", "r"], ["l", "r"]);
 ```
 
 ### Parameters
 
-| Parameter | Type         | Description                            |
-| --------- | ------------ | -------------------------------------- |
-| `matrix`  | `number[][]` | 2D matrix representing the chess board |
+| Parameter       | Type       | Default      | Description                            |
+| --------------- | ---------- | ------------ | -------------------------------------- |
+| `player1Castle` | `string[]` | `["l", "r"]` | Castling options available to Player 1 |
+| `player2Castle` | `string[]` | `["l", "r"]` | Castling options available to Player 2 |
 
-The matrix must contain valid chess-piece values from `0` through `12`.
+### Castling Configuration
+
+The following values are supported:
+
+```js
+["l"]
+```
+
+Allows castling using the left-side rook.
+
+```js
+["r"]
+```
+
+Allows castling using the right-side rook.
+
+```js
+["l", "r"]
+```
+
+Allows castling using both rooks.
+
+```js
+["r", "l"]
+```
+
+Also allows castling using both rooks.
+
+The values `"l"` and `"r"` represent the rook located on the left and right edge of the board respectively.
+
+### Invalid Castling Configuration
+
+The constructor validates the castling configuration.
+
+The following are invalid:
+
+```js
+new Board("l", ["l", "r"]);
+```
+
+```js
+new Board([], ["l", "r"]);
+```
+
+```js
+new Board(["x"], ["l", "r"]);
+```
+
+```js
+new Board(["l", "l"], ["l", "r"]);
+```
+
+```js
+new Board(["l", "r", "l"], ["l", "r"]);
+```
+
+The constructor throws an error when:
+
+* The value is not an array.
+* The array contains fewer than 1 element.
+* The array contains more than 2 elements.
+* A value other than `"l"` or `"r"` is provided.
+* The same castling side is provided more than once.
 
 ---
 
+# Fitting a Matrix
+
+## `board.fit(matrix)`
+
+The `fit()` method validates the provided matrix and initializes the board's internal data.
+
+```js
+const board = new Board();
+
+board.fit(matrix);
+```
+
+The method performs the following operations:
+
+```text
+Matrix
+  ↓
+Check Dimensions
+  ↓
+Check Matrix Values
+  ↓
+Initialize Board Data
+```
+
+### Matrix Validation
+
+The matrix must:
+
+* Be an array.
+* Contain more than one row.
+* Contain more than one column.
+* Contain only arrays as rows.
+* Not contain nested arrays inside cells.
+* Have equal column lengths for every row.
+* Contain only values from:
+
+```js
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+```
+
+### Example
+
+```js
+const board = new Board();
+
+board.fit([
+    [10, 8, 9, 11, 12, 9, 8, 10],
+    [7, 7, 7, 7, 7, 7, 7, 7],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [4, 2, 3, 5, 6, 3, 2, 4]
+]);
+```
+
+---
+
+# Board Data
+
 ## `board.boardData`
 
-Contains the internal state of the chess board.
+After calling `fit()`, the board creates its internal `boardData`.
 
-The implementation uses this data to track things such as:
+The structure is:
 
-* Board matrix
-* Player 1 pieces
-* Player 2 pieces
-* Player 1 king
-* Player 2 king
-* Castling information
+```js
+{
+    matrix: matrix,
+    player1: player1,
+    player2: player2,
+    king1: king1,
+    king2: king2,
+    castle1: castle1,
+    castle2: castle2
+}
+```
 
-You can access it with:
+### `matrix`
+
+Contains the current chess-board matrix.
+
+```js
+board.boardData.matrix
+```
+
+### `player1`
+
+Contains the chess pieces belonging to Player 1.
+
+Each entry stores:
+
+```js
+[
+    [row, col],
+    pieceValue
+]
+```
+
+Example:
+
+```js
+[
+    [[7, 0], 1],
+    [[7, 1], 1],
+    [[7, 4], 6]
+]
+```
+
+### `player2`
+
+Contains the chess pieces belonging to Player 2.
+
+The structure is the same as `player1`:
+
+```js
+[
+    [position, pieceValue]
+]
+```
+
+### `king1`
+
+Stores the current position of Player 1's king:
+
+```js
+[row, col]
+```
+
+Example:
+
+```js
+[7, 4]
+```
+
+### `king2`
+
+Stores the current position of Player 2's king:
+
+```js
+[row, col]
+```
+
+Example:
+
+```js
+[0, 4]
+```
+
+### `castle1`
+
+Stores the column positions of Player 1's rooks that are currently eligible for castling.
+
+Example:
+
+```js
+[0, 7]
+```
+
+### `castle2`
+
+Stores the column positions of Player 2's rooks that are currently eligible for castling.
+
+Example:
+
+```js
+[0, 7]
+```
+
+You can inspect the complete board state using:
 
 ```js
 console.log(board.boardData);
@@ -157,9 +378,11 @@ console.log(board.boardData);
 
 ---
 
-# `showMoves(row, col)`
+# Show Possible Moves
 
-Returns the legal moves available for the chess piece at the specified position.
+## `board.showMoves(row, col)`
+
+Calculates and returns the legal moves available to the chess piece at the specified position.
 
 ```js
 const moves = board.showMoves(6, 0);
@@ -176,26 +399,80 @@ Example result:
 ]
 ```
 
-The method first determines which player's piece occupies the position, generates possible moves, and then filters moves that would result in the player's king being in check.
+The method:
 
-If there are no legal moves, the resulting list is empty after filtering.
+1. Determines which player owns the chess piece.
+2. Generates possible moves using the corresponding chessman class.
+3. Simulates each move.
+4. Checks whether the move would leave the player's king in check.
+5. Removes illegal moves.
+6. Returns the remaining legal moves.
+
+Conceptually:
+
+```text
+Chess Piece
+     ↓
+Generate Possible Moves
+     ↓
+Simulate Each Move
+     ↓
+Check King Safety
+     ↓
+Remove Illegal Moves
+     ↓
+Return Legal Moves
+```
+
+### Parameters
+
+| Parameter | Type     | Description                       |
+| --------- | -------- | --------------------------------- |
+| `row`     | `number` | Current row of the chess piece    |
+| `col`     | `number` | Current column of the chess piece |
+
+### Example
+
+```js
+const moves = board.showMoves(6, 0);
+
+console.log(moves);
+```
+
+If the piece has no legal moves, the final filtered result is an empty array:
+
+```js
+[]
+```
 
 ---
 
-# `playMove()`
+# Play a Move
 
-Moves a chess piece from one position to another.
+## `board.playMove(old_row, old_col, new_row, new_col, changeChessman)`
+
+Moves a chess piece from one position to another after validating that the destination is a legal move.
 
 ```js
 board.playMove(
-    oldRow,
-    oldCol,
-    newRow,
-    newCol
+    old_row,
+    old_col,
+    new_row,
+    new_col
 );
 ```
 
-Example:
+### Parameters
+
+| Parameter        | Type     | Default | Description                            |
+| ---------------- | -------- | ------- | -------------------------------------- |
+| `old_row`        | `number` | —       | Current row of the chess piece         |
+| `old_col`        | `number` | —       | Current column of the chess piece      |
+| `new_row`        | `number` | —       | Destination row                        |
+| `new_col`        | `number` | —       | Destination column                     |
+| `changeChessman` | `number` | `-1`    | Piece value used during pawn promotion |
+
+### Example
 
 ```js
 const success = board.playMove(
@@ -216,15 +493,53 @@ true
 
 when the move is successfully performed.
 
-The method validates that the destination is a legal move before changing the board.
+If the chess piece has no legal moves:
+
+```js
+false
+```
+
+is returned.
+
+If the destination is not one of the legal moves, the method throws:
+
+```text
+Error: Not a next valid move
+```
 
 ---
 
-## Pawn Promotion
+# Capturing Pieces
 
-Pawn promotion is supported through the `changeChessman` parameter.
+Capturing is handled automatically when a chess piece moves onto a square occupied by an opponent's chess piece.
 
-### Player 1
+Conceptually:
+
+```text
+Player 1 Piece
+      ↓
+Moves to Opponent Square
+      ↓
+Opponent Piece Captured
+      ↓
+Opponent Piece Removed
+      ↓
+Board Updated
+```
+
+The captured piece is removed from the corresponding player's internal piece list.
+
+The board matrix is then updated with the moving piece.
+
+---
+
+# Pawn Promotion
+
+Pawn promotion is supported through the `changeChessman` parameter of `playMove()`.
+
+A pawn must provide a valid promotion value when it reaches the opponent's extreme row.
+
+## Player 1 Promotion
 
 Player 1's pawn is represented by:
 
@@ -253,9 +568,23 @@ board.playMove(
 );
 ```
 
-This promotes the pawn to a Queen.
+The pawn becomes a Player 1 Queen.
 
-### Player 2
+If a Player 1 pawn reaches the final row without providing `changeChessman`, the engine throws:
+
+```text
+Error: changingChessman is not given
+```
+
+An invalid Player 1 promotion value throws an error such as:
+
+```text
+Error: changeChessman: 8 is invalid for player1
+```
+
+---
+
+## Player 2 Promotion
 
 Player 2's pawn is represented by:
 
@@ -272,11 +601,33 @@ It can be promoted to:
 11 → Queen
 ```
 
-## The implementation validates promotion values and throws an error when an invalid value is supplied.
+Example:
 
-# `check()`
+```js
+board.playMove(
+    oldRow,
+    oldCol,
+    newRow,
+    newCol,
+    11
+);
+```
 
-Checks whether either player's king is currently under attack.
+The pawn becomes a Player 2 Queen.
+
+An invalid Player 2 promotion value throws an error such as:
+
+```text
+Error: changeChessman: 5 is invalid for player2
+```
+
+---
+
+# Check Detection
+
+## `board.check()`
+
+Checks whether either player's king is currently in check.
 
 ```js
 const [player1Check, player2Check] = board.check();
@@ -285,7 +636,7 @@ console.log(player1Check);
 console.log(player2Check);
 ```
 
-The return value is:
+The method returns:
 
 ```js
 [
@@ -301,7 +652,35 @@ true  = King is in check
 false = King is not in check
 ```
 
-The engine checks attacks from:
+Therefore:
+
+```js
+[
+    player1Check,
+    player2Check
+]
+```
+
+means:
+
+* `player1Check` — whether Player 1's king is in check.
+* `player2Check` — whether Player 2's king is in check.
+
+### Example
+
+```js
+const [player1Check, player2Check] = board.check();
+
+if (player1Check) {
+    console.log("Player 1 is in check");
+}
+
+if (player2Check) {
+    console.log("Player 2 is in check");
+}
+```
+
+The check-detection logic evaluates attacks from:
 
 * Pawns
 * Knights
@@ -309,49 +688,61 @@ The engine checks attacks from:
 * Rooks
 * Queens
 
-## and uses path traversal for sliding pieces.
+For sliding pieces such as bishops, rooks, and queens, the engine traverses the path between the attacking piece and the king.
+
+Conceptually:
+
+```text
+Attacking Piece
+      ↓
+Determine Direction
+      ↓
+Traverse Board
+      ↓
+Check Blocking Pieces
+      ↓
+Reach Enemy King?
+      ↓
+King in Check
+```
+
+---
 
 # Legal Move Filtering
 
-The engine prevents moves that would leave the moving player's king in check.
+The engine prevents a chess piece from making a move that leaves its own king in check.
 
-Internally, the board creates a temporary copy of the matrix, performs the hypothetical move, and checks whether the king becomes attacked.
+The internal `#filter_out()` method performs this validation.
+
+For every generated move, the engine:
 
 ```text
 Current Board
       ↓
-Generate Possible Moves
+Generate Possible Move
+      ↓
+Create Temporary Matrix
       ↓
 Simulate Move
       ↓
 Check King Safety
       ↓
-Remove Illegal Move
+Move Leaves King in Check?
       ↓
-Return Legal Moves
+   Yes ───────→ Remove Move
+      │
+      No
+      ↓
+Keep Move
 ```
 
-This filtering is performed by the internal `#filter_out()` method.
+The temporary matrix is created using a copy of the current board:
 
----
-
-# Capturing Pieces
-
-When a piece moves onto a square occupied by an opponent's piece, the captured piece is removed from the corresponding player's piece list.
-
-For example:
-
-```text
-Player 1 piece
-      ↓
-moves onto
-      ↓
-Player 2 piece
-      ↓
-Player 2 piece is captured
+```js
+const matrix = this.boardData.matrix.map(row => [...row]);
 ```
 
-The implementation handles captures for both players.
+This allows the engine to test a move without immediately modifying the actual board.
 
 ---
 
@@ -359,19 +750,94 @@ The implementation handles captures for both players.
 
 Castling is supported for both players.
 
-The engine handles:
+The constructor determines which rooks are eligible for castling:
 
-* King-side castling
-* Queen-side castling
-* King position updates
-* Rook position updates
-* Castling-state updates
+```js
+const board = new Board(
+    ["l", "r"],
+    ["l", "r"]
+);
+```
 
-## When a king moves two columns toward a rook, the corresponding rook is moved automatically.
+The engine tracks eligible rook columns in:
 
-# Board Representation
+```js
+board.boardData.castle1
+board.boardData.castle2
+```
 
-A traditional starting position can be represented using the numeric matrix:
+For example:
+
+```js
+[0, 7]
+```
+
+means that both edge rooks are currently available for castling.
+
+### Supported Castling Sides
+
+Player 1:
+
+```js
+new Board(["l"], ["l", "r"]);
+```
+
+Player 1 can castle using the left rook.
+
+Player 2:
+
+```js
+new Board(["l", "r"], ["r"]);
+```
+
+Player 2 can castle using the right rook.
+
+Both sides:
+
+```js
+new Board(["l", "r"], ["l", "r"]);
+```
+
+### King Movement
+
+When a king performs a castling move by moving two columns toward the corresponding rook, the engine automatically moves the rook.
+
+For example, a king-side castling operation conceptually performs:
+
+```text
+King:
+old_col → old_col + 2
+
+Rook:
+edge_col → old_col + 1
+```
+
+For queen-side castling:
+
+```text
+King:
+old_col → old_col - 2
+
+Rook:
+edge_col → old_col - 1
+```
+
+The engine also updates:
+
+* King position
+* Rook position
+* Board matrix
+* Castling state
+
+Once a king moves, its castling state is cleared.
+
+When an eligible rook moves, its corresponding castling option is removed.
+
+---
+
+# Traditional 8×8 Board
+
+A traditional chess starting position can be represented using:
 
 ```js
 const matrix = [
@@ -386,28 +852,35 @@ const matrix = [
 ];
 ```
 
-Where:
+Then create and fit the board:
+
+```js
+const board = new Board();
+
+board.fit(matrix);
+```
+
+The matrix represents:
 
 ```text
 0  = Empty
-1  = P1 Pawn
-2  = P1 Knight
-3  = P1 Bishop
-4  = P1 Rook
-5  = P1 Queen
-6  = P1 King
-
-7  = P2 Pawn
-8  = P2 Knight
-9  = P2 Bishop
-10 = P2 Rook
-11 = P2 Queen
-12 = P2 King
+1  = Player 1 Pawn
+2  = Player 1 Knight
+3  = Player 1 Bishop
+4  = Player 1 Rook
+5  = Player 1 Queen
+6  = Player 1 King
+7  = Player 2 Pawn
+8  = Player 2 Knight
+9  = Player 2 Bishop
+10 = Player 2 Rook
+11 = Player 2 Queen
+12 = Player 2 King
 ```
 
 ---
 
-# Example
+# Complete Example
 
 ```js
 import Board from "./Board.js";
@@ -423,53 +896,130 @@ const matrix = [
     [4, 2, 3, 5, 6, 3, 2, 4]
 ];
 
-const board = new Board(matrix);
+// Create board with both castling sides enabled
+const board = new Board(
+    ["l", "r"],
+    ["l", "r"]
+);
+
+// Fit the board matrix
+board.fit(matrix);
+
+// Inspect board data
+console.log("Board Data:", board.boardData);
 
 // Get legal moves
 const moves = board.showMoves(6, 0);
 
 console.log("Available moves:", moves);
 
-// Check the board
+// Check both kings
 const [player1Check, player2Check] = board.check();
 
 console.log("Player 1 in check:", player1Check);
 console.log("Player 2 in check:", player2Check);
 
 // Play a move
-const moved = board.playMove(6, 0, 5, 0);
+const moved = board.playMove(
+    6,
+    0,
+    5,
+    0
+);
 
 console.log("Move successful:", moved);
 ```
 
 ---
 
+# Custom Board Example
+
+The engine is not restricted to an 8×8 board.
+
+For example:
+
+```js
+const board = new Board(
+    ["l", "r"],
+    ["l", "r"]
+);
+
+board.fit([
+    [0, 0, 0, 0, 0],
+    [0, 1, 0, 7, 0],
+    [0, 0, 6, 0, 12],
+    [0, 0, 0, 0, 0]
+]);
+```
+
+The board dimensions are determined from the supplied matrix.
+
+The implementation uses:
+
+```js
+matrix.length
+```
+
+for the number of rows and:
+
+```js
+matrix[0].length
+```
+
+for the number of columns.
+
+This allows the engine to work with non-standard board dimensions.
+
+---
+
 # Architecture
 
-The `Board` class extends `MatrixOperation` and uses separate chessman/move-generation classes to calculate possible moves.
+The `Board` class extends `MatrixOperation`.
+
 Conceptually:
 
 ```text
-                 Board
-                   │
-                   ▼
-           MatrixOperation
-                   │
-          ┌────────┴────────┐
-          │                 │
-          ▼                 ▼
- PlayerChessman_1     PlayerChessman_2
-          │                 │
-          └────────┬────────┘
-                   ▼
-             Move Generation
-                   │
-                   ▼
-             Legal Move Filter
-                   │
-                   ▼
-              Board State
+                    Board
+                      │
+                      ▼
+              MatrixOperation
+                      │
+          ┌───────────┴───────────┐
+          │                       │
+          ▼                       ▼
+ PlayerChessman_1         PlayerChessman_2
+          │                       │
+          └───────────┬───────────┘
+                      ▼
+                Move Generation
+                      │
+                      ▼
+              Legal Move Filter
+                      │
+                      ▼
+                 Board State
 ```
+
+The `MatrixOperation` class is responsible for:
+
+* Matrix validation
+* Board-data initialization
+* Row/column dimension tracking
+
+The `Board` class is responsible for:
+
+* Board creation
+* Castling configuration
+* Fitting the matrix
+* Move generation
+* Legal move filtering
+* Executing moves
+* Capturing
+* Pawn promotion
+* Castling
+* Check detection
+
+The chessman classes are responsible for generating piece-specific movement possibilities.
 
 ---
 
@@ -492,58 +1042,101 @@ Conceptually:
 
 ---
 
-# Custom Board Support
+# Error Handling
 
-One of the main goals of this engine is to avoid hard-coding the board to an 8×8 layout.
+The engine validates board configuration, matrix structure, moves, and pawn promotion.
 
-The implementation uses the board's row and column lengths when calculating movement boundaries, making it possible to work with different board dimensions.
+## Invalid Castling Configuration
 
-For example:
+Examples:
 
 ```js
-const board = new Board([
-    [0, 0, 0, 0, 0],
-    [0, 1, 0, 7, 0],
-    [0, 0, 6, 0, 12],
-    [0, 0, 0, 0, 0]
-]);
+new Board("l", ["l", "r"]);
 ```
 
-This allows experimentation with non-standard chess boards and board-based game engines.
+```js
+new Board(["x"], ["l", "r"]);
+```
+
+```js
+new Board(["l", "l"], ["l", "r"]);
+```
+
+These result in validation errors.
 
 ---
 
-# Error Handling
+## Invalid Matrix
 
-The engine throws errors when invalid operations are attempted.
+Examples of invalid matrices include:
 
-Examples include:
+```js
+[1, 2, 3]
+```
 
-### Invalid Move
+or:
+
+```js
+[
+    [1, 2],
+    [3]
+]
+```
+
+or:
+
+```js
+[
+    [1, [2]],
+    [3, 4]
+]
+```
+
+The engine throws an error when the matrix does not satisfy the required structure.
+
+---
+
+## Invalid Move
+
+If a destination is not a legal move for the selected chess piece:
 
 ```text
 Error: Not a next valid move
 ```
 
-### Missing Promotion
+---
+
+## Missing Promotion
+
+If a pawn reaches the promotion row without providing a promotion value:
 
 ```text
 Error: changingChessman is not given
 ```
 
-### Invalid Player 1 Promotion
+---
+
+## Invalid Player 1 Promotion
+
+Player 1 promotion values must be:
 
 ```text
-Error: changeChessman is invalid for player1
+2, 3, 4, 5
 ```
 
-### Invalid Player 2 Promotion
+Otherwise an error is thrown.
+
+---
+
+## Invalid Player 2 Promotion
+
+Player 2 promotion values must be:
 
 ```text
-Error: changeChessman is invalid for player2
+8, 9, 10, 11
 ```
 
-The move API documents these validation conditions explicitly.
+Otherwise an error is thrown.
 
 ---
 
@@ -567,7 +1160,7 @@ Install dependencies:
 npm install
 ```
 
-Run the project's available development/test command according to its package configuration.
+Run the available development or test commands according to the project's `package.json`.
 
 ---
 
@@ -575,7 +1168,21 @@ Run the project's available development/test command according to its package co
 
 This project is focused on building a reusable JavaScript chess-board and move-validation engine with support for customizable board dimensions.
 
-The current implementation contains the core board-management and chess-rule functionality, including move generation, check detection, legal-move filtering, promotion, capturing, and castling.
+The current implementation provides:
+
+* Custom board dimensions
+* Matrix validation
+* Chess piece movement
+* Legal move filtering
+* Check detection
+* Capturing
+* Pawn promotion
+* Castling
+* Player piece tracking
+* King position tracking
+* Castling-state tracking
+
+The engine is designed so that the board matrix can be supplied independently from the board configuration.
 
 ---
 
@@ -585,32 +1192,41 @@ Contributions are welcome.
 
 If you would like to contribute:
 
-1. Fork the repository.
-2. Create a new branch.
+### 1. Fork the repository
+
+### 2. Create a new branch
 
 ```bash
 git checkout -b feature/my-feature
 ```
 
-3. Make your changes.
-4. Test your changes.
-5. Commit your changes.
+### 3. Make your changes
+
+Implement your changes and ensure they follow the existing project structure.
+
+### 4. Test your changes
+
+Verify that the changes do not break existing board, movement, check, capture, promotion, or castling functionality.
+
+### 5. Commit your changes
 
 ```bash
 git commit -m "Add my feature"
 ```
 
-6. Push the branch.
+### 6. Push the branch
 
 ```bash
 git push origin feature/my-feature
 ```
 
-7. Open a Pull Request.
+### 7. Open a Pull Request
+
+Submit a Pull Request describing the changes you made.
 
 ---
 
-## License
+# License
 
 Copyright (c) 2026 Dhrubajyoti Deb
 
@@ -620,12 +1236,12 @@ See the [LICENSE](LICENSE) file for the complete license text.
 
 ---
 
-## Author
+# Author
 
 **Dhrubajyoti Deb**
 
 ---
 
-## ⭐ Support
+# ⭐ Support
 
 If you find this project useful, consider giving the repository a ⭐ on GitHub.
