@@ -448,12 +448,7 @@ If the piece has no legal moves, the final filtered result is an empty array:
 Moves a chess piece from one position to another after validating that the destination is a legal move.
 
 ```js
-board.playMove(
-    old_row,
-    old_col,
-    new_row,
-    new_col
-);
+board.playMove(old_row, old_col, new_row, new_col);
 ```
 
 ### Parameters
@@ -469,12 +464,7 @@ board.playMove(
 ### Example
 
 ```js
-const success = board.playMove(
-    6,
-    0,
-    5,
-    0
-);
+const success = board.playMove(6, 0, 5, 0);
 
 console.log(success);
 ```
@@ -553,13 +543,7 @@ It can be promoted to:
 Example:
 
 ```js
-board.playMove(
-    oldRow,
-    oldCol,
-    newRow,
-    newCol,
-    5
-);
+board.playMove(oldRow, oldCol, newRow, newCol, 5);
 ```
 
 The pawn becomes a Player 1 Queen.
@@ -598,13 +582,7 @@ It can be promoted to:
 Example:
 
 ```js
-board.playMove(
-    oldRow,
-    oldCol,
-    newRow,
-    newCol,
-    11
-);
+board.playMove(oldRow, oldCol, newRow, newCol, 11);
 ```
 
 The pawn becomes a Player 2 Queen.
@@ -747,10 +725,7 @@ Castling is supported for both players.
 The constructor determines which rooks are eligible for castling:
 
 ```js
-const board = new Board(
-    ["l", "r"],
-    ["l", "r"]
-);
+const board = new Board(player1Castle = ["l", "r"], player2Castle = ["l", "r"]);
 ```
 
 The engine tracks eligible rook columns in:
@@ -891,10 +866,7 @@ const matrix = [
 ];
 
 // Create board with both castling sides enabled
-const board = new Board(
-    ["l", "r"],
-    ["l", "r"]
-);
+const board = new Board(player1Castle = ["l", "r"], player2Castle = ["l", "r"]);
 
 // Fit the board matrix
 board.fit(matrix);
@@ -914,12 +886,7 @@ console.log("Player 1 in check:", player1Check);
 console.log("Player 2 in check:", player2Check);
 
 // Play a move
-const moved = board.playMove(
-    6,
-    0,
-    5,
-    0
-);
+const moved = board.playMove(6, 0, 5, 0);
 
 console.log("Move successful:", moved);
 ```
@@ -933,10 +900,7 @@ The engine is not restricted to an 8×8 board.
 For example:
 
 ```js
-const board = new Board(
-    ["l", "r"],
-    ["l", "r"]
-);
+const board = new Board(player1Castle = ["l", "r"], player2Castle = ["l", "r"]);
 
 board.fit([
     [0, 0, 0, 0, 0],
@@ -1110,7 +1074,7 @@ Error: changingChessman is not given
 
 ---
 
-## Invalid Player 1 Promotion
+## Player 1 Promotion
 
 Player 1 promotion values must be:
 
@@ -1122,7 +1086,7 @@ Otherwise an error is thrown.
 
 ---
 
-## Invalid Player 2 Promotion
+## Player 2 Promotion
 
 Player 2 promotion values must be:
 

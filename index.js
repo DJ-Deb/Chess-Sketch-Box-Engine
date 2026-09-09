@@ -451,7 +451,7 @@ export default class Board extends MatrixOperation {
     playMove(old_row, old_col, new_row, new_col, changeChessman = -1) {
         const list = this.showMoves(old_row, old_col)
 
-        // throws error when the chessman is 0 or donot have any moves
+        // return true or false: once move is played
         if (list.length === 0) {
             return false
         } else {
