@@ -451,7 +451,11 @@ export default class Board extends MatrixOperation {
     playMove(old_row, old_col, new_row, new_col, changeChessman = -1) {
         const list = this.showMoves(old_row, old_col)
 
+<<<<<<< HEAD
         // return true or false: once move is played
+=======
+        // return true or false: once played
+>>>>>>> 0235eb23f65303ce7da3e5773ef4dfbff6b51d8d
         if (list.length === 0) {
             return false
         } else {
